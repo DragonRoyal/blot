@@ -1,46 +1,45 @@
-setDocDimensions(200, 200); // 200x200 mm
+javascript
+// Import necessary functions from the blotToolkit
+const { Turtle, rotate, scale, translate, originate } = blotToolkit;
 
-// Step 2: Create the outer circle of the basketball
-const turtle = new bt.Turtle()
-  .down()
-  .arc(360, 50); // Draw a circle with radius 50mm
+// Function to draw a single petal
+function drawPetal(turtle, length, width) {
+  turtle.down()
+        .forward(length)
+        .right(45)
+        .arc(180, width)
+        .right(45)
+        .forward(length)
+        .right(180)
+        .up();
+  return turtle.lines();
+}
 
-const outerCircle = turtle.lines();
+// Function to draw a flower with multiple petals
+function drawFlower(petals, petalLength, petalWidth, centerX, centerY) {
+  const flowerPolylines = [];
+  for (let i = 0; i < petals; i++) {
+    const petalTurtle = new Turtle().goTo([centerX, centerY]);
+    flowerPolylines.push(...drawPetal(petalTurtle, petalLength, petalWidth));
+    rotate(flowerPolylines, 360 / petals, [centerX, centerY]);
+  }
+  return flowerPolylines;
+}
 
-// Step 3: Draw the stripes
-const stripe1 = new bt.Turtle()
-  .jump([0, -50])
-  .down()
-  .forward(100)
-  .lines();
+// Set up the document dimensions
+setDocDimensions(125, 125);
 
-const stripe2 = new bt.Turtle()
-  .jump([-50, 0])
-  .down()
-  .forward(100)
-  .lines();
+// Parameters for the flower
+const numPetals = 8;
+const petalLength = 30;
+const petalWidth = 15;
+const flowerCenter = [62.5, 62.5];
 
-const stripe3 = new bt.Turtle()
-  .jump([25, 25])
-  .down()
-  .left(135)
-  .forward(70)
-  .lines();
+// Draw the flower and store the polylines
+const flowerPolylines = drawFlower(numPetals, petalLength, petalWidth, flowerCenter[0], flowerCenter[1]);
 
-const stripe4 = new bt.Turtle()
-  .jump([-25, 25])
-  .down()
-  .right(135)
-  .forward(70)
-  .lines();
+// Optionally transform the flower (e.g., scale, rotate, translate)
+const scaledFlower = scale(flowerPolylines, 1.5, flowerCenter);
 
-// Combine all stripes into one array
-const stripes = [stripe1, stripe2, stripe3, stripe4];
-
-// Step 4: Apply perspective transformations
-const perspectiveStripes = stripes.map(polyline => bt.scale(polyline, [1, 0.6], [0, 0])); // Flatten vertically
-const perspectiveOuterCircle = bt.scale(outerCircle, [1, 0.6], [0, 0]);
-
-// Step 5: Draw everything
-drawLines(perspectiveOuterCircle, { stroke: 'black', width: 2 });
-drawLines(perspectiveStripes, { stroke: 'black', width: 2 });
+// Draw the flower on the Blot Turtle
+drawLines(scaledFlower, { stroke: "black", width: 1 });
