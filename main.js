@@ -1,45 +1,61 @@
-javascript
-// Import necessary functions from the blotToolkit
-const { Turtle, rotate, scale, translate, originate } = blotToolkit;
-
-// Function to draw a single petal
-function drawPetal(turtle, length, width) {
-  turtle.down()
-        .forward(length)
-        .right(45)
-        .arc(180, width)
-        .right(45)
-        .forward(length)
-        .right(180)
-        .up();
-  return turtle.lines();
-}
-
-// Function to draw a flower with multiple petals
-function drawFlower(petals, petalLength, petalWidth, centerX, centerY) {
-  const flowerPolylines = [];
-  for (let i = 0; i < petals; i++) {
-    const petalTurtle = new Turtle().goTo([centerX, centerY]);
-    flowerPolylines.push(...drawPetal(petalTurtle, petalLength, petalWidth));
-    rotate(flowerPolylines, 360 / petals, [centerX, centerY]);
-  }
-  return flowerPolylines;
-}
+const { Turtle, scale, rotate, translate, originate, iteratePoints, rand, randInRange, join } = blotToolkit;
 
 // Set up the document dimensions
 setDocDimensions(125, 125);
 
-// Parameters for the flower
-const numPetals = 8;
-const petalLength = 30;
-const petalWidth = 15;
-const flowerCenter = [62.5, 62.5];
+// Function to create a flower stem
+function createStem() {
+  const stem = new Turtle();
+  stem.down();
+  for (let i = 0; i < 15; i++) {
+    const angle = randInRange(-10, 10);
+    const length = randInRange(5, 10);
+    stem.forward(length);
+    stem.left(angle);
+  }
+  return stem.lines();
+}
 
-// Draw the flower and store the polylines
-const flowerPolylines = drawFlower(numPetals, petalLength, petalWidth, flowerCenter[0], flowerCenter[1]);
+// Function to create a single petal
+function createPetal() {
+  const petal = new Turtle();
+  petal.down();
+  petal.forward(10);
+  petal.arc(60, 5);
+  petal.forward(10);
+  petal.arc(60, 5);
+  return petal.lines();
+}
 
-// Optionally transform the flower (e.g., scale, rotate, translate)
-const scaledFlower = scale(flowerPolylines, 1.5, flowerCenter);
+// Function to generate petals around the flower center
+function createPetals(numPetals) {
+  const petals = [];
+  for (let i = 0; i < numPetals; i++) {
+    let petal = createPetal();
+    const angle = (360 / numPetals) * i + randInRange(-10, 10);
+    petal = rotate(petal, angle);
+    petal = translate(petal, [0, 50]);
+    petals.push(petal);
+  }
+  return petals;
+}
 
-// Draw the flower on the Blot Turtle
-drawLines(scaledFlower, { stroke: "black", width: 1 });
+// Create the stem
+const stem = createStem();
+const stemTransformed = translate(stem, [62.5, 0]);
+drawLines(stemTransformed, { stroke: 'green', width: 2 });
+
+// Create and draw the petals
+const numPetals = 7;
+const petals = createPetals(numPetals);
+const allPetals = join([], ...petals);
+drawLines(allPetals, { fill: 'red', stroke: 'red', width: 1 });
+
+// Add a flower center
+const center = new Turtle();
+center.down();
+center.forward(3);
+center.arc(360, 3);
+const centerLines = center.lines();
+const centerTransformed = translate(centerLines, [62.5, 50]);
+drawLines(centerTransformed, { fill: 'yellow', stroke: 'yellow', width: 1 });
